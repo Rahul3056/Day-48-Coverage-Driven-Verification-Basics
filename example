@@ -1,0 +1,91 @@
+
+## ✅ Functional Coverage Example: Opcode Coverage in a Transaction
+
+---
+
+### **1. Define a Class with Randomization and Coverage**
+
+```systemverilog
+class Transaction;
+
+    rand bit [3:0] opcode;
+
+    // Coverage group definition
+    covergroup opcode_cg;
+        coverpoint opcode {
+            bins read_op   = {4'b0000};
+            bins write_op  = {4'b0001};
+            bins others    = {[4'b0010:4'b1111]};
+        }
+    endgroup
+
+    function new();
+        opcode_cg = new(); // Create coverage group
+    endfunction
+
+    function void sample_coverage();
+        opcode_cg.sample(); // Sample the value of opcode
+    endfunction
+
+endclass
+```
+
+---
+
+### **2. Testbench to Randomize and Sample**
+
+```systemverilog
+module tb_functional_coverage;
+
+    Transaction t = new();
+
+    initial begin
+        int success;
+
+        repeat (20) begin
+            success = t.randomize();
+            if (success) begin
+                $display("Randomized opcode = %0d", t.opcode);
+                t.sample_coverage(); // collect coverage
+            end else begin
+                $display("Randomization failed.");
+            end
+        end
+
+        // Optional: dump coverage report (tool-specific)
+        // $coverage_save("coverage_report.ucdb");
+    end
+
+endmodule
+```
+
+---
+
+### **3. Explanation of the Example**
+
+| Component               | Purpose                                                  |
+| ----------------------- | -------------------------------------------------------- |
+| `rand bit [3:0] opcode` | Variable to generate random values                       |
+| `covergroup opcode_cg`  | Declares a coverage group on `opcode`                    |
+| `coverpoint opcode`     | Observes the values of `opcode`                          |
+| `bins`                  | Defines categories of interest (e.g., read/write/others) |
+| `.sample()`             | Logs the current value into coverage                     |
+
+---
+
+### **4. Expected Output (sample):**
+
+```
+Randomized opcode = 0
+Randomized opcode = 1
+Randomized opcode = 13
+Randomized opcode = 2
+...
+```
+
+Coverage will track:
+
+* How often each bin is hit
+* Which opcodes were exercised during simulation
+
+
